@@ -2,6 +2,7 @@ package dev.flamenbaum.httpserver;
 
 import dev.flamenbaum.httpserver.config.Configuration;
 import dev.flamenbaum.httpserver.config.ConfigurationManager;
+import dev.flamenbaum.httpserver.core.ServerListenerThread;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,30 +25,10 @@ public class HttpServer {
         Configuration conf = ConfigurationManager.getInstance().getCurrentConfiguration();
 
         try {
-            ServerSocket serverSocket = new ServerSocket(conf.getPort());
-            Socket socket = serverSocket.accept();
-
-            InputStream in = socket.getInputStream();
-            OutputStream out = socket.getOutputStream();
-
-            String html = "<html><head><title>Simple Java HTTP SERVER</title></head><body><h1>This page was served using my Simple Java HTTP Server</h1></body></html>";
-
-            final String CRLF = "\n\r"; // bytes 13 , 10
-            String response =
-                    "HTTP/1.1 200 OK" + CRLF + // Status Line: HTTP VERSION RESPONSE_CODE RESPONSE_MESSAGE
-                             "Content-Length: " + html.getBytes().length + CRLF + // HEADER
-                            CRLF +
-                            html +
-                            CRLF + CRLF;
-
-            out.write(response.getBytes());
-
-            in.close();
-            out.close();
-            socket.close();
-            serverSocket.close();
+            ServerListenerThread serverListenerThread = new ServerListenerThread(conf.getPort(), conf.getWebRoot());
+            serverListenerThread.start();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 }
